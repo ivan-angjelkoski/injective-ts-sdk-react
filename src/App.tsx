@@ -36,6 +36,8 @@ function App() {
   const [portfolio, setPortfolio] = useState<AccountPortfolioV2 | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("1");
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const injectiveAddress = address ? getInjectiveAddress(address) : null;
 
   const msg = MsgSend.fromJSON({
@@ -70,6 +72,9 @@ function App() {
       return;
     }
 
+    setTxHash(null);
+    setError(null);
+
     msgBroadcaster
       .broadcastV2({
         msgs: [msg],
@@ -77,8 +82,13 @@ function App() {
         ethereumAddress: address,
         injectiveAddress: injectiveAddress,
       })
-      .then((txHash) => {
-        console.log(txHash);
+      .then((hash) => {
+        console.log(hash);
+        setTxHash(hash.txHash);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message || "Transaction failed");
       });
   }
 
@@ -125,6 +135,20 @@ function App() {
               <button className="send-button" onClick={send}>
                 Send Transaction
               </button>
+
+              {txHash && (
+                <div className="tx-success">
+                  <h3>Transaction Successful!</h3>
+                  <div className="address-info">{txHash}</div>
+                </div>
+              )}
+
+              {error && (
+                <div className="tx-error">
+                  <h3>Transaction Failed</h3>
+                  <div className="error-message">{error}</div>
+                </div>
+              )}
             </div>
           )}
         </div>
