@@ -7,6 +7,7 @@ import {
   IndexerGrpcAccountPortfolioApi,
   MsgSend,
 } from "@injectivelabs/sdk-ts";
+import { BigNumberInBase } from "@injectivelabs/utils";
 import { Network, getNetworkEndpoints } from "@injectivelabs/networks";
 
 import { ChainId, EthereumChainId } from "@injectivelabs/ts-types";
@@ -33,14 +34,19 @@ const msgBroadcaster = new MsgBroadcaster({
 
 function App() {
   const [portfolio, setPortfolio] = useState<AccountPortfolioV2 | null>(null);
-
   const [address, setAddress] = useState<string | null>(null);
+  const [amount, setAmount] = useState<string>("1");
   const injectiveAddress = address ? getInjectiveAddress(address) : null;
 
   const msg = MsgSend.fromJSON({
     dstInjectiveAddress: injectiveAddress!,
     srcInjectiveAddress: injectiveAddress!,
-    amount: [{ denom: "inj", amount: "100000000" }],
+    amount: [
+      {
+        denom: "inj",
+        amount: new BigNumberInBase(amount).toWei().toString(),
+      },
+    ],
   });
 
   useEffect(() => {
@@ -76,27 +82,60 @@ function App() {
       });
   }
 
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setAmount(e.target.value);
+  }
+
   return (
-    <div>
+    <div className="container">
       <header>
         {address ? (
-          <h1>Connected to {address}</h1>
+          <h1>Injective Wallet</h1>
         ) : (
           <button onClick={connectWallet}>Connect Wallet</button>
         )}
       </header>
 
-      {injectiveAddress && (
-        <div>
-          <h2>Injective Address: {injectiveAddress}</h2>
+      {address && (
+        <div className="wallet-card">
+          <h2>Wallet Information</h2>
+          <div>
+            <strong>Ethereum Address:</strong>
+            <div className="address-info">{address}</div>
+          </div>
+
+          {injectiveAddress && (
+            <div>
+              <strong>Injective Address:</strong>
+              <div className="address-info">{injectiveAddress}</div>
+
+              <div className="amount-input-container">
+                <label htmlFor="amount-input">Amount to send (INJ):</label>
+                <input
+                  id="amount-input"
+                  type="number"
+                  value={amount}
+                  onChange={handleAmountChange}
+                  min="0.000001"
+                  step="0.000001"
+                  className="amount-input"
+                />
+              </div>
+
+              <button className="send-button" onClick={send}>
+                Send Transaction
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      <button onClick={send}>Send</button>
-
       {portfolio && (
-        <div>
-          <h2>Portfolio: {JSON.stringify(portfolio)}</h2>
+        <div className="portfolio-container">
+          <h2>Portfolio</h2>
+          <div className="portfolio-data">
+            {JSON.stringify(portfolio, null, 2)}
+          </div>
         </div>
       )}
     </div>
