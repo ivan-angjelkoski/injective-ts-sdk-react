@@ -1,6 +1,10 @@
 const webpack = require("webpack");
 
 module.exports = {
+  babel: {
+    presets: ["@babel/preset-env", "@babel/preset-react"],
+    plugins: [],
+  },
   webpack: {
     configure: {
       resolve: {

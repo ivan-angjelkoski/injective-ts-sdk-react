@@ -11,12 +11,18 @@ import { BigNumberInBase } from "@injectivelabs/utils";
 import { Network, getNetworkEndpoints } from "@injectivelabs/networks";
 
 import { ChainId, EthereumChainId } from "@injectivelabs/ts-types";
+import { WalletStrategy } from "@injectivelabs/wallet-strategy";
+import { EvmWalletStrategy } from "@injectivelabs/wallet-evm";
+import { Wallet } from "@injectivelabs/wallet-base";
+import { MsgBroadcaster } from "@injectivelabs/wallet-core";
 
-import { MsgBroadcaster, WalletStrategy } from "@injectivelabs/wallet-ts";
+// import { MsgBroadcaster, WalletStrategy } from "@injectivelabs/wallet-ts";
 
 const walletStrategy = new WalletStrategy({
   chainId: ChainId.Mainnet,
-  ethereumOptions: { ethereumChainId: EthereumChainId.Mainnet, rpcUrl: "" },
+  ethereumOptions: { rpcUrl: "", ethereumChainId: EthereumChainId.Mainnet },
+  options: {},
+  strategies: {},
 });
 
 // walletStrategy.setWallet(Wallet.Keplr); Note that if we use keplr, it returns then injective address, not the ethereum address.
@@ -26,10 +32,9 @@ const indexerApi = new IndexerGrpcAccountPortfolioApi(endpoints.indexer);
 
 const msgBroadcaster = new MsgBroadcaster({
   walletStrategy,
-  network: Network.Mainnet,
-  endpoints,
-  ethereumChainId: EthereumChainId.Mainnet,
+  network: Network.MainnetSentry,
   chainId: ChainId.Mainnet,
+  ethereumChainId: EthereumChainId.Mainnet,
 });
 
 function App() {
@@ -78,7 +83,6 @@ function App() {
     msgBroadcaster
       .broadcastV2({
         msgs: [msg],
-        address: injectiveAddress,
         ethereumAddress: address,
         injectiveAddress: injectiveAddress,
       })
